@@ -6,7 +6,8 @@ After=multi-user.target watchdog.service
 [Service]
 Type=simple
 ExecStart=/home/pi/rpi_slideshow/slideshow.sh
-#Restart=always
+Restart=on-failure
+RestartSec=5s
 
 [Install]
 WantedBy=multi-user.target

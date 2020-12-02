@@ -7,13 +7,13 @@
 # watchdog switch.
 #
 #
-import os
-import time
-import sys
-import subprocess
-
 import ConfigParser
+import os
 import pygame
+import signal
+import subprocess
+import sys
+import time
 
 def isnumber( value):
     try:
@@ -93,7 +93,7 @@ def getfiles( config):
     return filelist
 
 
-def play_omx( filename, screen):
+def play_omx( filename):
     # Play a movie using oxmplayer.  
     #print "OMX: ", filename
     args = ['omxplayer']
@@ -103,9 +103,6 @@ def play_omx( filename, screen):
     #print args
     # Use .call, as it will wait for process to finish
     subprocess.call( args, stdin=None, stdout=None, stderr=None, shell=False)
-    blankscreen( screen)
-    # Sleep here is to catch key press.
-    sleep(0.05)
 
 
 def play_pygame( filename, config, screen):
@@ -141,8 +138,12 @@ def play( filename, config, screen):
     # Determine program to use
     for ext in config['omx_extensions']:
         if filename.endswith( ext):
-            play_omx( filename, screen)
+            play_omx( filename)
             return
+
+        blankscreen(screen)
+        # Sleep here is to catch key press.
+        sleep(0.05)
 
     for ext in config['img_extensions']:
         if filename.endswith( ext):
@@ -187,9 +188,16 @@ else:
         print 'No files found at:', config['filepath']
         close_down()
 
+    def terminate():
+        pygame.display.quit()
+        sys.exit(0)
+
+    signal.signal(signal.SIGTERM, terminate)
+
     screen = pygameinit()
 
     while True:
         for filename in filelist:
             play( filename, config, screen)
 
+    pygame.display.quit()
